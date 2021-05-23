@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testExecutions version="1">
+  <file path="/home/hector/api-challenge/test/translate.test.ts">
+    <testCase name="Translate Full object" duration="8"/>
+    <testCase name="Translate Object" duration="1"/>
+  </file>
+  <file path="/home/hector/api-challenge/test/keys.test.ts">
+    <testCase name="Keys Get keys" duration="4"/>
+    <testCase name="Keys Get keys error" duration="2"/>
+    <testCase name="Keys Post keys body incorrect" duration="2"/>
+    <testCase name="Keys Post keys exists" duration="1"/>
+    <testCase name="Keys Post keys success" duration="1"/>
+    <testCase name="Keys Put keys" duration="2"/>
+    <testCase name="Keys Put keys body incorrect" duration="1"/>
+  </file>
+  <file path="/home/hector/api-challenge/test/film.test.ts">
+    <testCase name="Film Get Films" duration="7"/>
+    <testCase name="Film Get Films error" duration="1"/>
+  </file>
+  <file path="/home/hector/api-challenge/test/swapi.test.ts">
+    <testCase name="SWAPI Get Films" duration="275"/>
+  </file>
+</testExecutions>

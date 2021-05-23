@@ -1,0 +1,132 @@
+service: challenge
+provider:
+  name: aws
+  runtime: nodejs12.x
+  lambdaHashingVersion: 20201221
+  stage: ${opt:stage, 'dev'}
+  region: us-west-2
+  environment:
+    NODE_ENV: ${opt:stage, self:provider.stage}
+    KEYS_TABLE: "keys-${opt:stage, self:provider.stage}"
+    SWAPI: "https://swapi.py4e.com/api"
+    SERVERLESS_REGION: ${self:provider.region}
+    DYNAMODB_LOCAL: "http://localhost:8000"
+    ACCESS_KEY_ID: ${self:custom.accessKeyId.${self:provider.stage}}
+    SECRET_ACCESS_KEY: ${self:custom.secretAccessKey.${self:provider.stage}}
+
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "xray:*"
+      Resource:
+        - "*"
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+        - lambda:InvokeAsync
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "dynamodb:GetItem"
+        - "dynamodb:Scan"
+        - "dynamodb:PutItem"
+        - "dynamodb:UpdateItem"
+      Resource: "*"
+
+plugins:
+  - serverless-plugin-typescript
+  - serverless-dynamodb-local
+  - serverless-offline
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      heapInitial: 200m
+      heapMax: 1g
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+  accessKeyId:
+    dev: "AKIA4PGDSFZVEVPV4XM3"
+  secretAccessKey:
+    dev: "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"
+
+resources:
+  Resources:
+    KeysDynamoDbTable:
+      Type: 'AWS::DynamoDB::Table'
+      Properties:
+        AttributeDefinitions:
+          -
+            AttributeName: "id"
+            AttributeType: "S"   
+          -
+            AttributeName: "original"
+            AttributeType: "S"   
+          -
+            AttributeName: "translated"
+            AttributeType: "S"   
+        KeySchema:
+          -
+            AttributeName: "original"
+            KeyType: "HASH"
+        GlobalSecondaryIndexes:
+          - IndexName: idIndex
+            KeySchema: 
+              - AttributeName: id
+                KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: translatedIndex
+            KeySchema: 
+              - AttributeName: translated
+                KeyType: HASH
+            Projection:
+              ProjectionType: KEYS_ONLY
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 1
+          WriteCapacityUnits: 1
+        TableName: ${self:provider.environment.KEYS_TABLE}
+
+functions:
+  get-films:
+    handler: src/handler.getFilms
+    timeout: 15
+    events:
+      - http:
+          path: films/
+          method: get
+
+  get-keys:
+    handler: src/handler.getKeys
+    timeout: 15
+    events:
+      - http:
+          path: keys/
+          method: get
+
+  post-keys:
+    handler: src/handler.addKeys
+    timeout: 15
+    events:
+      - http:
+          path: keys/
+          method: post
+
+  put-keys:
+    handler: src/handler.addKeys
+    timeout: 15
+    events:
+      - http:
+          path: keys/
+          method: put
